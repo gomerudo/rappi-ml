@@ -1,0 +1,62 @@
+services:
+    db:
+        restart: always
+        image: mysql/mysql-server:8.0.26
+        container_name: rappi-ml
+        expose:
+            - "3306"
+        networks:
+            - backend
+        environment:
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        volumes:
+            - dbdata:/var/lib/mysql
+
+    ml-server:
+        restart: always
+        build: ./docker/mlflow
+        image: rappi-mlflow
+        container_name: rappi-mlflow
+        expose:
+            - "5000"
+        networks:
+            - frontend
+            - backend
+        command: mlflow server --host 0.0.0.0
+        # command: mlflow server --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE} --host 0.0.0.0        
+
+    web-endpoint:
+        restart: always
+        build: ./
+        image: rappi-endpoint
+        container_name: rappi-endpoint
+        expose:
+            - "5001"
+        networks:
+            - frontend
+            - backend
+        command: flask run --host 0.0.0.0 -p 5001
+
+    nginx:
+        restart: always
+        build: ./docker/nginx
+        image: rappi-nginx
+        container_name: rappi-nginx
+        ports:
+            - "81:80"
+        networks:
+            - frontend
+        depends_on:
+            - ml-server
+
+networks:
+    frontend:
+        driver: bridge
+    backend:
+        driver: bridge
+
+volumes:
+    dbdata:
