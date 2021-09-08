@@ -17,7 +17,9 @@ services:
 
     ml-server:
         restart: always
-        build: ./docker/mlflow
+        build: 
+            context: ./
+            dockerfile: docker/mlflow/Dockerfile
         image: rappi-mlflow
         container_name: rappi-mlflow
         expose:
@@ -25,12 +27,21 @@ services:
         networks:
             - frontend
             - backend
-        command: mlflow server --host 0.0.0.0
-        # command: mlflow server --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE} --host 0.0.0.0        
+        environment:
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        # command: mlflow server --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE} --default-artifact-root file:/home/mlflow-artifacts/ --host 0.0.0.0        
+        command: >
+            bash -c "python ${SCRIPTS_DIR}/train.py --input_csv ${DATA_DIR}/orders.csv --output_dir ${TAKEN_MODEL_DIR}
+            && mlflow models serve -m ${TAKEN_MODEL_DIR} -h 0.0.0.0"
 
     web-endpoint:
         restart: always
-        build: ./
+        build: 
+            context: ./
+            dockerfile: docker/webapp/Dockerfile
         image: rappi-endpoint
         container_name: rappi-endpoint
         expose:
@@ -38,11 +49,18 @@ services:
         networks:
             - frontend
             - backend
+        environment:
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         command: flask run --host 0.0.0.0 -p 5001
 
     nginx:
         restart: always
-        build: ./docker/nginx
+        build:
+            context: ./docker/nginx
+            dockerfile: Dockerfile
         image: rappi-nginx
         container_name: rappi-nginx
         ports:

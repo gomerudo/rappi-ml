@@ -1,24 +1,33 @@
+# import os
 import argparse
+import logging
+import sys
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 import mlflow
 import mlflow.sklearn
-from rappiml.skutils.transformers import DateTimeTransformer
-from rappiml.skutils.transformers import DropColumnsTransformer
+from mlflow.models.signature import infer_signature
+from rappiml.transformers import DateTimeTransformer
+from rappiml.transformers import DropColumnsTransformer
+
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger('RAPPI')
 
 
 def run(source, target):
-    print("\nLoading data ...")
+    logger.info("Loading data ...")
     orders_df = pd.read_csv(source)
 
-    print("\nPreparing data for training ...")
+    logger.info("Preparing data for training ...")
     X = orders_df.drop(['taken'], axis=1)
     y = orders_df['taken']
+    X['created_at'] = X['created_at'].astype('datetime64[ns, UTC]')
+    logger.info(X.dtypes)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.33, random_state=42, stratify=y)
@@ -26,19 +35,15 @@ def run(source, target):
     scaling_features = [
         'to_user_distance', 'to_user_elevation', 'total_earning'
     ]
-    datetime_features = ['created_at']
+    datetime_features = 'created_at'
 
-    print("\nTraining ...")
+    logger.info("Training ...")
     preprocessor = ColumnTransformer(
         transformers=[
             ('datetime', DateTimeTransformer(onehot=True), datetime_features),
             ('continuous', StandardScaler(), scaling_features)
         ],
     )
-
-    parameters = {
-        'classifier__n_estimators': [100]
-    }
 
     pipeline = Pipeline(
         steps=[
@@ -47,30 +52,32 @@ def run(source, target):
                 DropColumnsTransformer(cols=['store_id', 'order_id'])
             ),
             ('preprocessing', preprocessor),
-            ('classifier', RandomForestClassifier())
+            ('classifier', RandomForestClassifier(n_estimators=100))
         ]
     )
 
-    clf = GridSearchCV(pipeline, parameters, scoring='roc_auc')
-    clf.fit(X_train, y_train)
+    pipeline.fit(X_train, y_train)
 
-    best_model = clf.best_estimator_
-    cv_score = clf.best_score_
-    test_score = clf.score(X_test, y_test)
+    test_score = pipeline.score(X_test, y_test)
 
-    print("CV score:", cv_score)
-    print("Test score", test_score)
-    print(best_model)
+    logger.info("Test score: %d" % test_score)
 
-    print("\nSaving best model ...")
+    logger.info("Obtaining input and ouput signature ...")
+
+    signature = infer_signature(X_test, pipeline.predict(X_test))
+    logger.info(signature)
+
+    logger.info("Saving best model ...")
 
     mlflow.sklearn.save_model(
-        best_model,
+        pipeline,
         path=target,
-        serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE
+        serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+        signature=signature,
+        pip_requirements="/home/rappiml/requirements.txt"
     )
 
-    print("Done.")
+    logger.info("Done.")
 
 
 if __name__ == '__main__':
@@ -80,7 +87,6 @@ if __name__ == '__main__':
         '--input_csv',
         action="store",
         required=True,
-        # default="data/orders.csv",
         help='Data source',
         dest="input_csv"
     )
@@ -89,14 +95,12 @@ if __name__ == '__main__':
         '--output_dir',
         action="store",
         required=True,
-        help='Target directory',
+        help='Output directory',
         dest="output_dir"
     )
 
     # Parse arguments and print them
     args = parser.parse_args()
-    print("Source file:", args.input_csv)
-    print("Target dir:", args.output_dir)
 
     # Run
     run(args.input_csv, args.output_dir)
