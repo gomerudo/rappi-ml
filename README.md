@@ -38,7 +38,7 @@ This repository is structured as follows:
 - `data`: where the original dataset for this challenge is stored.
 - `docker`: where all the images used in this challenge are located.
 - `docker-compose.yml`: compose file to start the containers.
-- `notebooks`: where the notebook to solve and explore the __taken orders__
+- `notebooks`: where the notebook to solve and explore the _taken orders_
 problem is stored.
 - `python`: contains the two python packages for this solution (utilities and
 the web endpoint).
@@ -61,13 +61,7 @@ MYSQL_USER=rappi
 MYSQL_PASSWORD=abc123
 MYSQL_ROOT_PASSWORD=abc123
 
-SCRIPTS_DIR=/home/rappiml/scripts
-MODELS_DIR=/home/rappiml/models
-DATA_DIR=/home/rappiml/data
-TAKEN_MODEL_DIR=/home/rappiml/models/taken-orders
-
-APP_DIR=/home/rappiml
-FLASK_APP=rappiml
+CONTAINER_WORKSPACE=/home/rappiml
 ```
 
 Store these variables in a `.env` file at the same level of the 
@@ -97,10 +91,12 @@ the contents of `scripts/rappi-db.sql`.
 docker exec -it rappi-ml bash
 
 # Create the bash
-mysql -u rappi -p${MYSQL_ROOT_PASSWORD}
+mysql -u ${MYSQL_USER} -p${MYSQL_PASSWORD}
 ```
 
-You can exit the bash session if you want.
+> **Note**. The services are already when you see the message 
+`[2021-09-09 04:43:49 +0000] [334] [INFO] Booting worker with pid: 334` in the
+log file of `rappi-mlflow`.
 
 ### Run inferences
 

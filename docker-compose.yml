@@ -20,7 +20,7 @@ services:
         build: 
             context: ./
             args:
-                RAPPI_WORKSPACE: ${APP_DIR}
+                RAPPI_WORKSPACE: ${CONTAINER_WORKSPACE}
             dockerfile: docker/mlflow/Dockerfile
         image: rappi-mlflow
         container_name: rappi-mlflow
@@ -29,21 +29,16 @@ services:
         networks:
             - frontend
             - backend
-        environment:
-            - MYSQL_DATABASE=${MYSQL_DATABASE}
-            - MYSQL_USER=${MYSQL_USER}
-            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         command: >
-            bash -c "python ${SCRIPTS_DIR}/train.py --input_csv ${DATA_DIR}/orders.csv --output_dir ${TAKEN_MODEL_DIR}
-            && mlflow models serve -m ${TAKEN_MODEL_DIR} -h 0.0.0.0"
+            bash -c "python ${CONTAINER_WORKSPACE}/scripts/train.py --input_csv ${CONTAINER_WORKSPACE}/data/orders.csv --output_dir ${CONTAINER_WORKSPACE}/models/taken-orders
+            && mlflow models serve -m ${CONTAINER_WORKSPACE}/models/taken-orders -h 0.0.0.0"
 
     web-endpoint:
         restart: always
         build: 
             context: ./
             args:
-                APP_DIR: ${APP_DIR}
+                APP_DIR: ${CONTAINER_WORKSPACE}
             dockerfile: docker/webapp/Dockerfile
         image: rappi-endpoint
         container_name: rappi-endpoint
