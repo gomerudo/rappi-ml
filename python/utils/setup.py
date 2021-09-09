@@ -1,7 +1,6 @@
 from setuptools import setup, find_packages
 
 setup(
-    # For installation
     name='rappiml',
     version='0.0.1',
     install_requires=['numpy', 'scikit-learn'],

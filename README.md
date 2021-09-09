@@ -1,6 +1,15 @@
+
 # Rappi challenge
 
 Author: Jorge Gómez Robles (j.gomezrb@gmail.com)
+
+- [Rappi challenge](#rappi-challenge)
+  - [Repository structure](#repository-structure)
+  - [Environment](#environment)
+  - [How to run](#how-to-run)
+    - [Start the inference service](#start-the-inference-service)
+    - [Create the DB (only the first time)](#create-the-db-only-the-first-time)
+    - [Run inferences](#run-inferences)
 
 ## Repository structure
 
@@ -64,21 +73,24 @@ FLASK_APP=rappiml
 Store these variables in a `.env` file at the same level of the 
 `docker-compose.yml` file.
 
-## Overview of the solution
 
+## How to run
 
-## How to run the inference service
+### Start the inference service
+
+After creating your `.env` file, run the following command to start the docker
+containers.
 
 ```bash
 docker-compose up --build
 ```
 
-## How to create the DB (only the first time)
+### Create the DB (only the first time)
 
-When you start the services for the first time, the MySQL database does not have
-any tables. In order to the create the table of inferences, wait until all
-services are up and running and run the commands below. Once in the bash, copy
-and paste the contents of `scripts/rappi-db.sql`.
+When you start the services for the first time, the database does not have any
+tables. In order to the create the table of inferences, wait until all services
+are up and running and run the commands below. Once in the bash, copy and paste
+the contents of `scripts/rappi-db.sql`.
 
 ```bash
 # Start a local bash session from the mysql container
@@ -90,7 +102,7 @@ mysql -u rappi -p${MYSQL_ROOT_PASSWORD}
 
 You can exit the bash session if you want.
 
-## How to run inferences
+### Run inferences
 
 The endpoint to obtain inferences from a list of observations is accesible at
 `http://localhost:81/analytics/api/taken/` (accepts POST). The content-type of

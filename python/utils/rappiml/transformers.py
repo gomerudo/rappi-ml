@@ -1,10 +1,29 @@
+"""Custom Scikit-learn transformers (i.e., pre-processors)."""
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class DateTimeTransformer(BaseEstimator, TransformerMixin):
+    """Encode a pd.Series with datatime type into numerical vectors.
 
+    Attributes:
+        onehot (bool). If True, the result is a one-hot encoding of the month,
+            day, and hour; which are concatenated together with a 0/1 value of
+            whether or not the minute is in the 2nd half hour. If False,
+            1-digit representations concatenated all together.
+
+    """
     def __init__(self, onehot=True):
+        """Initializer.
+
+        Args:
+            onehot (bool). If True, the result is a one-hot encoding of the
+                month, day, and hour; which are concatenated together with a
+                0/1 value of whether or not the minute is in the 2nd half hour.
+                If False, 1-digit representations concatenated all together.
+                Defaults to True.
+
+        """
         self.onehot = onehot
 
     def fit(self, X, y=None):
@@ -48,8 +67,20 @@ class DateTimeTransformer(BaseEstimator, TransformerMixin):
 
 
 class DropColumnsTransformer(BaseEstimator, TransformerMixin):
+    """Remove columns from a DataFrame.
+
+    Attributes:
+        cols (list or str): Name of the column(s) to be dropped.
+
+    """
 
     def __init__(self, cols):
+        """Remove columns from a DataFrame.
+
+        Args:
+            cols (list or str): Name of the column(s) to be dropped.
+
+        """
         if not isinstance(cols, list):
             self.cols = [cols]
         else:

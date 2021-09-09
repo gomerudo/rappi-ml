@@ -1,11 +1,8 @@
 services:
     db:
         restart: always
-        # build:
-        #     context: ./
-        #     dockerfile: docker/mysql/Dockerfile
         image: mysql/mysql-server:8.0.26
-        container_name: rappi-ml
+        container_name: rappi-db
         expose:
             - "3306"
         networks:
@@ -17,12 +14,13 @@ services:
             - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         volumes:
             - dbdata:/var/lib/mysql
-        # command: bash -c "mysql rappiml --host 0.0.0.0 --port 3306 -p${MYSQL_ROOT_PASSWORD} -u root < /tmp/rappi-db.sql"
 
     ml-server:
         restart: always
         build: 
             context: ./
+            args:
+                RAPPI_WORKSPACE: ${APP_DIR}
             dockerfile: docker/mlflow/Dockerfile
         image: rappi-mlflow
         container_name: rappi-mlflow
@@ -44,6 +42,8 @@ services:
         restart: always
         build: 
             context: ./
+            args:
+                APP_DIR: ${APP_DIR}
             dockerfile: docker/webapp/Dockerfile
         image: rappi-endpoint
         container_name: rappi-endpoint
@@ -56,7 +56,6 @@ services:
             - MYSQL_DATABASE=${MYSQL_DATABASE}
             - MYSQL_USER=${MYSQL_USER}
             - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         command: flask run --host 0.0.0.0 -p 5001
 
     nginx:

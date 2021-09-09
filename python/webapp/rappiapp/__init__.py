@@ -1,12 +1,16 @@
 from flask import Flask
+from logging.config import dictConfig
 from werkzeug.middleware.proxy_fix import ProxyFix
 import rappiapp.app_config
 import rappiapp.backend.api
-from logging.config import dictConfig
 
 
 def create_app(test_config=None):
+    """Initialize the flask application.
 
+    Args:
+        test_config (dict): A flask configuration.
+    """
     dictConfig({
         'version': 1,
         'formatters': {'default': {
@@ -36,10 +40,5 @@ def create_app(test_config=None):
     app.register_blueprint(rappiapp.backend.api.bp)
 
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-
-    # # TODO: check if it should be here. Nginx should do the trick as well
-    # @app.route('/')
-    # def rootindex():
-    #     return redirect(url_for('index.index'))
 
     return app

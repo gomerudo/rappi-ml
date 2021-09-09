@@ -1,10 +1,17 @@
-# nginx v1.21.1 is the latest at the time of creation of this file
+################################################################################
+################################## BASE IMAGE ##################################
+################################################################################
+
+# v1.21.1 is the latest at the time of creation of this file
 FROM nginx:1.21.1
 
-# Remove default Nginx config
-RUN rm /etc/nginx/nginx.conf
+################################################################################
+######################### ADD AND REPLACE CONFIG FILES  ########################
+################################################################################
 
-# Copy the modified Nginx config
+# Remove default Nginx config and copy the new one
+RUN rm /etc/nginx/nginx.conf
 COPY config/nginx.conf /etc/nginx/
-# COPY config/mlflow.conf /etc/nginx/sites-enabled/
+
+# Copy the RappiML config file (web endpoint)
 COPY config/rappiml.conf /etc/nginx/sites-enabled/
