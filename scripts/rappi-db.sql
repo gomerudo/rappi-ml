@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS TakenInferences (
+    OrderID INT NOT NULL,
+    ServiceVersion VARCHAR(255) NOT NULL,
+    Result BOOLEAN NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (OrderID, ServiceVersion)
+)  ENGINE=INNODB;

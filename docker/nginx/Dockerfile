@@ -6,5 +6,5 @@ RUN rm /etc/nginx/nginx.conf
 
 # Copy the modified Nginx config
 COPY config/nginx.conf /etc/nginx/
-COPY config/mlflow.conf /etc/nginx/sites-enabled/
-# COPY config/rappiml.conf /etc/nginx/sites-enabled/
+# COPY config/mlflow.conf /etc/nginx/sites-enabled/
+COPY config/rappiml.conf /etc/nginx/sites-enabled/

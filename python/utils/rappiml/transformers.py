@@ -15,10 +15,6 @@ class DateTimeTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         # This has to be iterative
-        # res_cols = []
-        print(type(X))
-        # for column in X.dtypes.iteritems():
-
         res = []
         for dt_date in X:
 
@@ -47,9 +43,7 @@ class DateTimeTransformer(BaseEstimator, TransformerMixin):
 
             res.append(row)
 
-            # res_cols.append(res)
-
-    # res_cols = np.array(res_cols).astype(float)
+        res = np.array(res)
         return np.squeeze(res)
 
 

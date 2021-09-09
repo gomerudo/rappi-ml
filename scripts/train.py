@@ -60,7 +60,7 @@ def run(source, target):
 
     test_score = pipeline.score(X_test, y_test)
 
-    logger.info("Test score: %d" % test_score)
+    logger.info("Test score: %f" % test_score)
 
     logger.info("Obtaining input and ouput signature ...")
 
